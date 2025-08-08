@@ -8,11 +8,13 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 3001,
     strictPort: true,
+    allowedHosts: ["syed-ahamed-portfolio.onrender.com"],
   },
   preview: {
     host: "0.0.0.0",
     port: 3001,
     strictPort: true,
+    allowedHosts: ["syed-ahamed-portfolio.onrender.com"],
   },
   optimizeDeps: {
     exclude: ["lucide-react"],
