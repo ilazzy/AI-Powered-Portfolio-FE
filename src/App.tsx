@@ -22,12 +22,12 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  const indexRef1 = useRef(0);
+  // const indexRef1 = useRef(0);
   const indexRef2 = useRef(0);
 
-  const [streamedText1, setStreamedText1] = useState("");
+  // const [streamedText1, setStreamedText1] = useState("");
   const [streamedText2, setStreamedText2] = useState("");
-  const [showSecondMessage, setShowSecondMessage] = useState(false);
+  // const [showSecondMessage, setShowSecondMessage] = useState(false);
 
   // ✅ Generate new user ID every time page loads
   const userId = useMemo(() => {
@@ -40,31 +40,31 @@ function App() {
     }, 0);
   };
 
+  // useEffect(() => {
+  //   const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
+  //   const interval1 = setInterval(() => {
+  //     if (indexRef1.current >= fullMessage1.length) {
+  //       clearInterval(interval1);
+  //       return;
+  //     }
+
+  //     const nextChar = fullMessage1.charAt(indexRef1.current);
+  //     indexRef1.current++;
+  //     setStreamedText1((prev) => prev + nextChar);
+  //   }, 30);
+
+  //   return () => clearInterval(interval1);
+  // }, []);
+
+  // useEffect(() => {
+  //   const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
+  //   if (streamedText1 === fullMessage1) {
+  //     setShowSecondMessage(true);
+  //   }
+  // }, [streamedText1]);
+
   useEffect(() => {
-    const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
-    const interval1 = setInterval(() => {
-      if (indexRef1.current >= fullMessage1.length) {
-        clearInterval(interval1);
-        return;
-      }
-
-      const nextChar = fullMessage1.charAt(indexRef1.current);
-      indexRef1.current++;
-      setStreamedText1((prev) => prev + nextChar);
-    }, 30);
-
-    return () => clearInterval(interval1);
-  }, []);
-
-  useEffect(() => {
-    const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
-    if (streamedText1 === fullMessage1) {
-      setShowSecondMessage(true);
-    }
-  }, [streamedText1]);
-
-  useEffect(() => {
-    if (!showSecondMessage) return;
+    // if (!showSecondMessage) return;
 
     const fullMessage2 = `Yes, I know what you're thinking 😂
     But don’t tell Syed — he’s really bad at UI development, still pretending like he knows how to build UIs.
@@ -81,7 +81,7 @@ function App() {
     }, 30);
 
     return () => clearInterval(interval2);
-  }, [showSecondMessage]);
+  }, []);
 
   useEffect(() => {
     const welcomeCommand: Command = {
@@ -89,14 +89,14 @@ function App() {
       output: (
         <div className="mb-4">
           <div className="text-green-500 mb-4">🤖 AI Chat Terminal</div>
-          <div className="text-blue-500 mb-2">{streamedText1}</div>
+          {/* <div className="text-blue-500 mb-2">{streamedText1}</div> */}
           <div className="text-gray-300 mb-2">{streamedText2 || " "}</div>
           <div className="text-gray-300 mb-10">Let’s talk about Syed!</div>
         </div>
       ),
     };
     setHistory([welcomeCommand]);
-  }, [streamedText1, streamedText2]);
+  }, [streamedText2]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -114,7 +114,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/chat", {
+      const response = await fetch(import.meta.env.VITE_BE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
