@@ -2,17 +2,13 @@ var express = require("express");
 var path = require("path");
 var app = express();
 
-app.use(express.static("public")); // Serve static files from 'public' folder
+// app.use(express.static("public")); // Serve static files from 'public' folder
 
 app.get("/", function (req, res) {
-  res.send(`
-    <html>
-      <body style="text-align: center; font-family: sans-serif;">
-        <img src="/cat-laughing-4.jpg" alt="Image" style="max-width: 46%; height: auto;" />
-        <h1>Lavda Iqbal</h1>
-      </body>
-    </html>
-  `);
+  const ip1 = req.headers["x-forwarded-for"];
+  const ip2 = req.socket.remoteAddress;
+  // const { message, sender } = req.body;
+  res.status(200).json({ip1,ip2});
 });
 
 app.listen(3000, function () {
