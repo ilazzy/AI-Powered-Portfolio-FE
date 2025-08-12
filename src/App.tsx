@@ -113,62 +113,69 @@ function App() {
     setIsStreaming(true);
     setStreamingOutput("");
 
-    // Add user input to history
-    const userCommand: Command = {
-      input: message,
-    };
-
-    // Placeholder for streaming response
-    const responsePlaceholder: Command = {
-      input: "",
-      output: (
-        <div className="text-gray-300 mb-2">
-          <div className="flex items-start mb-2">
-            <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
-            <div className="whitespace-pre-wrap animate-pulse">{""}</div>
-          </div>
-        </div>
-      ),
-    };
-
-    // Add both user input and placeholder to history immediately
-    setHistory((prev) => [...prev, userCommand, responsePlaceholder]);
+    // Add user message to history
+    setHistory((prev) => [...prev, { input: message }]);
 
     let streamedResponse = "";
     sendChatMessage(message).then((response) => {
       let index = 0;
+      let responseInserted = false;
 
       const streamInterval = setInterval(() => {
         if (index < response.length) {
           streamedResponse += response.charAt(index);
+          setStreamingOutput(streamedResponse);
           index++;
 
-          // Update the last history item (placeholder) with the streamed content
-          setHistory((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              input: "",
-              output: (
-                <div className="text-gray-300 mb-2">
-                  <div className="flex items-start mb-2">
-                    <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
-                    <div className="whitespace-pre-wrap animate-pulse">
-                      {streamedResponse}
+          if (!responseInserted && streamedResponse.length > 0) {
+            // Insert AI response block for the first time
+            setHistory((prev) => [
+              ...prev,
+              {
+                input: "",
+                output: (
+                  <div className="text-gray-300 mb-2">
+                    <div className="flex items-start mb-2">
+                      <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                      <div className="whitespace-pre-wrap animate-pulse">
+                        {streamedResponse}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ),
-            };
-            return updated;
-          });
+                ),
+              },
+            ]);
+            responseInserted = true;
+          } else if (responseInserted) {
+            // Update last response block
+            setHistory((prev) => {
+              const updated = [...prev];
+              const lastIndex = updated.length - 1;
+              updated[lastIndex] = {
+                input: "",
+                output: (
+                  <div className="text-gray-300 mb-2">
+                    <div className="flex items-start mb-2">
+                      <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                      <div className="whitespace-pre-wrap animate-pulse">
+                        {streamedResponse}
+                      </div>
+                    </div>
+                  </div>
+                ),
+              };
+              return updated;
+            });
+          }
         } else {
           clearInterval(streamInterval);
           setIsStreaming(false);
 
-          // Final update: Replace the placeholder with full response (no pulse)
+          // Final update: remove pulse animation
           setHistory((prev) => {
             const updated = [...prev];
-            updated[updated.length - 1] = {
+            const lastIndex = updated.length - 1;
+            updated[lastIndex] = {
               input: "",
               output: (
                 <div className="text-gray-300 mb-2">
@@ -200,9 +207,7 @@ function App() {
   };
 
   const handleTerminalClick = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
   };
 
   return (
@@ -245,19 +250,14 @@ function App() {
           </div>
         ))}
 
-        {/* Streaming Output */}
-        {isStreaming && streamingOutput && (
-          <div className="text-gray-300 mb-2">
-            <div className="flex items-start mb-2">
-              <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
-              <div className="whitespace-pre-wrap animate-pulse">
-                {streamingOutput}
-              </div>
-            </div>
+        {/* Thinking... shown BEFORE stream starts */}
+        {isStreaming && streamingOutput === "" && (
+          <div className="mt-2 text-blue-400 text-sm animate-pulse">
+            Thinking...
           </div>
         )}
 
-        {/* Current Input */}
+        {/* Input */}
         <form onSubmit={handleSubmit} className="relative w-full">
           {!isStreaming && (
             <div className="flex items-center text-white font-mono whitespace-pre">
@@ -269,7 +269,7 @@ function App() {
             </div>
           )}
 
-          {/* Hidden input field */}
+          {/* Invisible input field */}
           <input
             ref={inputRef}
             type="text"
@@ -280,12 +280,6 @@ function App() {
             disabled={isLoading || isStreaming}
             autoFocus
           />
-
-          {(isLoading || isStreaming) && (
-            <div className="mt-2 text-blue-400 text-sm animate-pulse">
-              Thinking...
-            </div>
-          )}
         </form>
 
         {/* AI Mode Footer */}
