@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Terminal, MessageCircle } from "lucide-react";
+import { Terminal, Sparkles } from "lucide-react";
 
 interface Command {
   input: string;
@@ -22,14 +22,6 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  // const indexRef1 = useRef(0);
-  const indexRef2 = useRef(0);
-
-  // const [streamedText1, setStreamedText1] = useState("");
-  const [streamedText2, setStreamedText2] = useState("");
-  // const [showSecondMessage, setShowSecondMessage] = useState(false);
-
-  // ✅ Generate new user ID every time page loads
   const userId = useMemo(() => {
     return "user-" + Math.random().toString(36).substring(2, 10);
   }, []);
@@ -40,58 +32,23 @@ function App() {
     }, 0);
   };
 
-  // useEffect(() => {
-  //   const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
-  //   const interval1 = setInterval(() => {
-  //     if (indexRef1.current >= fullMessage1.length) {
-  //       clearInterval(interval1);
-  //       return;
-  //     }
-
-  //     const nextChar = fullMessage1.charAt(indexRef1.current);
-  //     indexRef1.current++;
-  //     setStreamedText1((prev) => prev + nextChar);
-  //   }, 30);
-
-  //   return () => clearInterval(interval1);
-  // }, []);
-
-  // useEffect(() => {
-  //   const fullMessage1 = `Your messages will be sent directly to the AI inference. ✅ No logs. No tracking. No IPs. Just clean, private conversation.`;
-  //   if (streamedText1 === fullMessage1) {
-  //     setShowSecondMessage(true);
-  //   }
-  // }, [streamedText1]);
-
-  useEffect(() => {
-    // if (!showSecondMessage) return;
-
-    const fullMessage2 = `Yes, I know what you're thinking 😂
-    But don’t tell Syed — he’s really bad at UI development, still pretending like he knows how to build UIs.
-    Truth is, he’s actually a backend developer. Keep it secret 😂`;
-    const interval2 = setInterval(() => {
-      if (indexRef2.current >= fullMessage2.length) {
-        clearInterval(interval2);
-        return;
-      }
-
-      const nextChar = fullMessage2.charAt(indexRef2.current);
-      indexRef2.current++;
-      setStreamedText2((prev) => prev + nextChar);
-    }, 30);
-
-    return () => clearInterval(interval2);
-  }, []);
+  const [streamedText2] = useState(
+    `Think the UI’s bad? Don’t tell Syed 😂 He’s a backend dev still pretending he knows how to build UI. Keep it secret! 😂`
+  );
 
   useEffect(() => {
     const welcomeCommand: Command = {
       input: "",
       output: (
         <div className="mb-4">
-          <div className="text-green-500 mb-4">🤖 AI Chat Terminal</div>
-          {/* <div className="text-blue-500 mb-2">{streamedText1}</div> */}
-          <div className="text-gray-300 mb-2">{streamedText2 || " "}</div>
-          <div className="text-gray-300 mb-10">Let’s talk about Syed!</div>
+          <div className="text-green-500 mb-4">
+            ✨ Welcome to Amicia Terminal
+          </div>
+          <div className="text-gray-300 mb-2">
+            Hi there — I'm Amicia, your AI-powered assistant. Let’s talk about
+            Syed?
+          </div>
+          <div className="text-gray-300 mb-10">{streamedText2 || " "}</div>
         </div>
       ),
     };
@@ -130,7 +87,6 @@ function App() {
       }
 
       const data = await response.json();
-
       const reply = data.ai_response || "No response received";
 
       const newChatHistory = [
@@ -153,38 +109,81 @@ function App() {
   };
 
   const handleMessage = (message: string) => {
+    setCurrentInput("");
+    setIsStreaming(true);
+    setStreamingOutput("");
+
+    // Add user input to history
     const userCommand: Command = {
       input: message,
     };
-    setHistory((prev) => [...prev, userCommand]);
 
+    // Placeholder for streaming response
+    const responsePlaceholder: Command = {
+      input: "",
+      output: (
+        <div className="text-gray-300 mb-2">
+          <div className="flex items-start mb-2">
+            <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+            <div className="whitespace-pre-wrap animate-pulse">{""}</div>
+          </div>
+        </div>
+      ),
+    };
+
+    // Add both user input and placeholder to history immediately
+    setHistory((prev) => [...prev, userCommand, responsePlaceholder]);
+
+    let streamedResponse = "";
     sendChatMessage(message).then((response) => {
-      setStreamingOutput("");
-      setIsStreaming(true);
-
       let index = 0;
 
       const streamInterval = setInterval(() => {
         if (index < response.length) {
-          setStreamingOutput((prev) => prev + response.charAt(index));
+          streamedResponse += response.charAt(index);
           index++;
+
+          // Update the last history item (placeholder) with the streamed content
+          setHistory((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              input: "",
+              output: (
+                <div className="text-gray-300 mb-2">
+                  <div className="flex items-start mb-2">
+                    <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                    <div className="whitespace-pre-wrap animate-pulse">
+                      {streamedResponse}
+                    </div>
+                  </div>
+                </div>
+              ),
+            };
+            return updated;
+          });
         } else {
           clearInterval(streamInterval);
           setIsStreaming(false);
 
-          const responseCommand: Command = {
-            input: "",
-            output: (
-              <div className="text-gray-300 mb-2">
-                <div className="flex items-start mb-2">
-                  <MessageCircle className="w-4 h-4 mr-2 mt-1 text-green-400 flex-shrink-0" />
-                  <div className="whitespace-pre-wrap">{response}</div>
+          // Final update: Replace the placeholder with full response (no pulse)
+          setHistory((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              input: "",
+              output: (
+                <div className="text-gray-300 mb-2">
+                  <div className="flex items-start mb-2">
+                    <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                    <div className="whitespace-pre-wrap">
+                      {streamedResponse}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ),
-          };
-          setHistory((prev) => [...prev, responseCommand]);
-          setStreamingOutput("");
+              ),
+            };
+            return updated;
+          });
+
           focusInput();
         }
       }, 20);
@@ -217,7 +216,9 @@ function App() {
         </div>
         <div className="flex items-center ml-4">
           <Terminal className="w-4 h-4 mr-2" />
-          <span className="text-sm">ai-chat@terminal</span>
+          <span className="text-sm">
+            syed_ahamed_portfolio@terminal | powered by ✨
+          </span>
         </div>
       </div>
 
@@ -244,11 +245,11 @@ function App() {
           </div>
         ))}
 
-        {/* Streaming Response */}
-        {isStreaming && (
+        {/* Streaming Output */}
+        {isStreaming && streamingOutput && (
           <div className="text-gray-300 mb-2">
             <div className="flex items-start mb-2">
-              <MessageCircle className="w-4 h-4 mr-2 mt-1 text-green-400 flex-shrink-0" />
+              <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
               <div className="whitespace-pre-wrap animate-pulse">
                 {streamingOutput}
               </div>
@@ -258,13 +259,15 @@ function App() {
 
         {/* Current Input */}
         <form onSubmit={handleSubmit} className="relative w-full">
-          <div className="flex items-center text-white font-mono whitespace-pre">
-            <span className="text-green-400">chat@ai.terminal:~$ </span>
-            <span>{currentInput}</span>
-            {!isLoading && !isStreaming && (
-              <div className="w-2 h-5 bg-white animate-pulse ml-1"></div>
-            )}
-          </div>
+          {!isStreaming && (
+            <div className="flex items-center text-white font-mono whitespace-pre">
+              <span className="text-green-400">chat@ai.terminal:~$ </span>
+              <span>{currentInput}</span>
+              {!isLoading && (
+                <div className="w-2 h-5 bg-white animate-pulse ml-1"></div>
+              )}
+            </div>
+          )}
 
           {/* Hidden input field */}
           <input
@@ -280,7 +283,7 @@ function App() {
 
           {(isLoading || isStreaming) && (
             <div className="mt-2 text-blue-400 text-sm animate-pulse">
-              Processing...
+              Thinking...
             </div>
           )}
         </form>
@@ -288,7 +291,7 @@ function App() {
         {/* AI Mode Footer */}
         <div className="mt-4 p-2 bg-green-900/30 border border-green-700/50 rounded">
           <div className="text-green-400 text-sm flex items-center">
-            <MessageCircle className="w-4 h-4 mr-2" />
+            <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
             AI Chat Mode - Every message connects directly to AI
           </div>
         </div>
