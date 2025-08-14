@@ -11,6 +11,30 @@ interface ChatMessage {
   content: string;
 }
 
+// 🔗 Helper function to turn plain text links into JSX links
+function linkifyText(text: string): JSX.Element[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          className="text-blue-400 underline hover:text-blue-300"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {part}
+        </a>
+      );
+    } else {
+      return <span key={i}>{part}</span>;
+    }
+  });
+}
+
 function App() {
   const [history, setHistory] = useState<Command[]>([]);
   const [currentInput, setCurrentInput] = useState("");
@@ -138,7 +162,7 @@ function App() {
                     <div className="flex items-start mb-2">
                       <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                       <div className="whitespace-pre-wrap animate-pulse">
-                        {streamedResponse}
+                        {linkifyText(streamedResponse)}
                       </div>
                     </div>
                   </div>
@@ -158,7 +182,7 @@ function App() {
                     <div className="flex items-start mb-2">
                       <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                       <div className="whitespace-pre-wrap animate-pulse">
-                        {streamedResponse}
+                        {linkifyText(streamedResponse)}
                       </div>
                     </div>
                   </div>
@@ -182,7 +206,7 @@ function App() {
                   <div className="flex items-start mb-2">
                     <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                     <div className="whitespace-pre-wrap">
-                      {streamedResponse}
+                      {linkifyText(streamedResponse)}
                     </div>
                   </div>
                 </div>
@@ -239,7 +263,7 @@ function App() {
             {command.input && (
               <div className="flex">
                 <span className="text-green-400">
-                  chat@ai.terminal:~$&nbsp;
+                  chat@amicia.terminal:~$&nbsp;
                 </span>
                 <span className="text-white">{command.input}</span>
               </div>
@@ -250,10 +274,10 @@ function App() {
           </div>
         ))}
 
-        {/* Thinking... shown BEFORE stream starts */}
+        {/* Thinking... */}
         {isStreaming && streamingOutput === "" && (
           <div className="flex items-center mt-2 text-blue-400 text-sm animate-pulse">
-            <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(0,0,0,0)]" />
+            <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100" />
             Thinking...
           </div>
         )}
@@ -262,7 +286,7 @@ function App() {
         <form onSubmit={handleSubmit} className="relative w-full">
           {!isStreaming && (
             <div className="flex items-center text-white font-mono whitespace-pre">
-              <span className="text-green-400">chat@ai.terminal:~$ </span>
+              <span className="text-green-400">chat@amicia.terminal:~$ </span>
               <span>{currentInput}</span>
               {!isLoading && (
                 <div className="w-2 h-5 bg-white animate-pulse ml-1"></div>
