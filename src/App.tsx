@@ -23,7 +23,7 @@ function App() {
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const userId = useMemo(() => {
-    return "user-" + Math.random().toString(36).substring(2, 10);
+    return "user-" + Math.random().toString(36).substring(2, 14);
   }, []);
 
   const focusInput = () => {
@@ -136,7 +136,7 @@ function App() {
                 output: (
                   <div className="text-gray-300 mb-2">
                     <div className="flex items-start mb-2">
-                      <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                      <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                       <div className="whitespace-pre-wrap animate-pulse">
                         {streamedResponse}
                       </div>
@@ -156,7 +156,7 @@ function App() {
                 output: (
                   <div className="text-gray-300 mb-2">
                     <div className="flex items-start mb-2">
-                      <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                      <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                       <div className="whitespace-pre-wrap animate-pulse">
                         {streamedResponse}
                       </div>
@@ -180,7 +180,7 @@ function App() {
               output: (
                 <div className="text-gray-300 mb-2">
                   <div className="flex items-start mb-2">
-                    <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                    <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
                     <div className="whitespace-pre-wrap">
                       {streamedResponse}
                     </div>
@@ -252,7 +252,8 @@ function App() {
 
         {/* Thinking... shown BEFORE stream starts */}
         {isStreaming && streamingOutput === "" && (
-          <div className="mt-2 text-blue-400 text-sm animate-pulse">
+          <div className="flex items-center mt-2 text-blue-400 text-sm animate-pulse">
+            <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(0,0,0,0)]" />
             Thinking...
           </div>
         )}
@@ -283,7 +284,7 @@ function App() {
         </form>
 
         {/* AI Mode Footer */}
-        <div className="mt-4 p-2 bg-green-900/30 border border-green-700/50 rounded">
+        <div className="absolute bottom-4 left-4 right-4 p-2 bg-green-900/30 border border-green-700/50 rounded">
           <div className="text-green-400 text-sm flex items-center">
             <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
             AI Chat Mode - Every message connects directly to AI
