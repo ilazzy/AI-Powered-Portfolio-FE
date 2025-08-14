@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes countdown-circle {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 100;
+  }
+}
+
+.animate-countdown {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: countdown-circle 10s linear forwards;
+  transform: rotate(-90deg) scaleX(1);
+  transform-origin: center;
+}

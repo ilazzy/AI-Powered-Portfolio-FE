@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Terminal, Sparkles } from "lucide-react";
+import {
+  Terminal,
+  Sparkles,
+  FileText,
+  Linkedin,
+  Mail,
+  MessageSquare,
+  BrainCircuit,
+  Activity,
+} from "lucide-react";
 
 interface Command {
   input: string;
@@ -42,9 +51,24 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingOutput, setStreamingOutput] = useState("");
+  const [showAIModeFooter, setShowAIModeFooter] = useState(true);
+  const [timeoutActive, setTimeoutActive] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent || navigator.vendor;
+
+    if (
+      /android|iphone|ipad|iPod|opera mini|iemobile|mobile/i.test(userAgent)
+    ) {
+      setIsMobile(true);
+    }
+  }, []);
 
   const userId = useMemo(() => {
     return "user-" + Math.random().toString(36).substring(2, 14);
@@ -90,6 +114,21 @@ function App() {
       inputRef.current.focus();
     }
   }, []);
+
+  useEffect(() => {
+    if (showAIModeFooter) {
+      setTimeoutActive(true);
+
+      timeoutRef.current = setTimeout(() => {
+        setShowAIModeFooter(false);
+        setTimeoutActive(false);
+      }, 10000);
+
+      return () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      };
+    }
+  }, [showAIModeFooter]);
 
   const sendChatMessage = async (message: string) => {
     setIsLoading(true);
@@ -234,85 +273,229 @@ function App() {
     inputRef.current?.focus();
   };
 
+  interface HoverButtonProps {
+    href: string;
+    label: string;
+    bg: string;
+    hoverBg: string;
+    icon: React.ReactNode;
+  }
+
+  function HoverButton({ href, label, bg, hoverBg, icon }: HoverButtonProps) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group flex items-center transition-all duration-300 px-2 py-1 rounded text-white ${bg} ${hoverBg}`}
+        aria-label={label}
+      >
+        {/* Icon stays always visible */}
+        <span className="ml-2 flex-shrink-0">
+          {icon}
+          {/* Red Dot only for  Architect */}
+          {label === "Architect" && (
+            <span className="absolute top-1 right-3 w-3.5 h-3.5 bg-red-500 rounded-full border border-white" />
+          )}
+        </span>
+
+        {/* Label appears only on hover */}
+        <span
+          className="ml-2 text-sm max-w-0 opacity-0 overflow-hidden group-hover:max-w-xs group-hover:opacity-100 transition-all duration-1"
+          style={{ transitionProperty: "max-width, opacity" }}
+        >
+          {label}
+        </span>
+      </a>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-mono">
-      {/* Terminal Header */}
-      <div className="bg-gray-800 px-4 py-2 flex items-center space-x-2 border-b border-gray-700">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 bg-red-700 text-white text-center p-3 z-50">
+          🚫 This terminal is designed for desktop. Please use a larger screen
+          for best experience.
         </div>
-        <div className="flex items-center ml-4">
-          <Terminal className="w-4 h-4 mr-2" />
-          <span className="text-sm">
-            syed_ahamed_portfolio@terminal | powered by ✨
-          </span>
+      )}
+      <div className="min-h-screen bg-gray-900 text-gray-100 font-mono">
+        {/* Terminal Header */}
+        <div className="bg-gray-800 px-4 py-2 flex items-center border-b border-gray-700 justify-between">
+          {/* Left side: terminal name + lights */}
+          <div className="flex space-x-2 items-center">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="flex items-center ml-4">
+              <Terminal className="w-4 h-4 mr-2" />
+              <span className="text-sm">
+                syed_ahamed_portfolio@terminal | powered by ✨
+              </span>
+            </div>
+          </div>
+
+          {/* Right side: Icon buttons with expanding labels */}
+          <div className="flex space-x-2.5">
+            {/* Reusable Button */}
+            <HoverButton
+              href="https://drive.google.com/file/d/10K7LpRIOTiCZzFf2wuj9IOHEC885pbWW/view?usp=drive_link"
+              label="Resume"
+              bg="bg-green-600"
+              hoverBg="hover:bg-green-700"
+              icon={<FileText className="w-5 h-5" />}
+            />
+
+            <HoverButton
+              href="https://www.linkedin.com/in/ilazzy/"
+              label="LinkedIn"
+              bg="bg-blue-700"
+              hoverBg="hover:bg-blue-800"
+              icon={<Linkedin className="w-5 h-5" />}
+            />
+
+            <HoverButton
+              href="mailto:zyedrazer.22@gmail.com"
+              label="Email"
+              bg="bg-indigo-600"
+              hoverBg="hover:bg-indigo-700"
+              icon={<Mail className="w-5 h-5" />}
+            />
+
+            <HoverButton
+              href="https://api.whatsapp.com/send/?phone=918072301937&text=Hello,%20this%20is%20HR%20from%20[Your%20Company%20Name].%20Looking%20forward%20to%20our%20conversation!&type=phone_number&app_absent=0"
+              label="WhatsApp"
+              bg="bg-green-600"
+              hoverBg="hover:bg-green-700"
+              icon={<MessageSquare className="w-5 h-5" />}
+            />
+
+            <HoverButton
+              href="https://stats.uptimerobot.com/MJmqymO8Jg"
+              label="ServerStatus"
+              bg="bg-yellow-500"
+              hoverBg="hover:shadow-[0_0_10px_3px_rgba(234,179,8,0.8)] transition-shadow duration-300"
+              icon={<Activity className="w-5 h-5" />}
+            />
+
+            <HoverButton
+              href="https://app.eraser.io/workspace/QiQKUwgcV0V9PCsLylUG"
+              label="AmiciaArchitect"
+              bg="bg-yellow-500"
+              hoverBg="hover:shadow-[0_0_10px_3px_rgba(234,179,8,0.8)] transition-shadow duration-300"
+              icon={<BrainCircuit className="w-5 h-5" />}
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Terminal Body */}
-      <div
-        ref={terminalRef}
-        className="p-4 h-[calc(100vh-60px)] overflow-y-auto cursor-text"
-        onClick={handleTerminalClick}
-      >
-        {/* Command History */}
-        {history.map((command, index) => (
-          <div key={index} className="mb-2">
-            {command.input && (
-              <div className="flex">
-                <span className="text-green-400">
-                  chat@amicia.terminal:~$&nbsp;
-                </span>
-                <span className="text-white">{command.input}</span>
-              </div>
-            )}
-            {command.output && (
-              <div className="mt-1 mb-3">{command.output}</div>
-            )}
-          </div>
-        ))}
-
-        {/* Thinking... */}
-        {isStreaming && streamingOutput === "" && (
-          <div className="flex items-center mt-2 text-blue-400 text-sm animate-pulse">
-            <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100" />
-            Thinking...
-          </div>
-        )}
-
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="relative w-full">
-          {!isStreaming && (
-            <div className="flex items-center text-white font-mono whitespace-pre">
-              <span className="text-green-400">chat@amicia.terminal:~$ </span>
-              <span>{currentInput}</span>
-              {!isLoading && (
-                <div className="w-2 h-5 bg-white animate-pulse ml-1"></div>
+        {/* Terminal Body */}
+        <div
+          ref={terminalRef}
+          className="p-4 h-[calc(100vh-60px)] overflow-y-auto cursor-text"
+          onClick={handleTerminalClick}
+        >
+          {/* Command History */}
+          {history.map((command, index) => (
+            <div key={index} className="mb-2">
+              {command.input && (
+                <div className="flex">
+                  <span className="text-green-400">
+                    chat@amicia.terminal:~$&nbsp;
+                  </span>
+                  <span className="text-white">{command.input}</span>
+                </div>
               )}
+              {command.output && (
+                <div className="mt-1 mb-3">{command.output}</div>
+              )}
+            </div>
+          ))}
+
+          {/* Thinking... */}
+          {isStreaming && streamingOutput === "" && (
+            <div className="flex items-center mt-2 text-blue-400 text-sm animate-pulse">
+              <Sparkles className="w-6 h-6 mr-3 mt-1 flex-shrink-0 text-cyan-100" />
+              Thinking...
             </div>
           )}
 
-          {/* Invisible input field */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={currentInput}
-            onChange={(e) => setCurrentInput(e.target.value)}
-            className="absolute top-0 left-0 w-full h-full opacity-0"
-            autoComplete="off"
-            disabled={isLoading || isStreaming}
-            autoFocus
-          />
-        </form>
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="relative w-full">
+            {!isStreaming && (
+              <div className="flex items-center text-white font-mono whitespace-pre">
+                <span className="text-green-400">chat@amicia.terminal:~$ </span>
+                <span>{currentInput}</span>
+                {!isLoading && (
+                  <div className="w-2 h-5 bg-white animate-pulse ml-1"></div>
+                )}
+              </div>
+            )}
 
-        {/* AI Mode Footer */}
-        <div className="absolute bottom-4 left-4 right-4 p-2 bg-green-900/30 border border-green-700/50 rounded">
-          <div className="text-green-400 text-sm flex items-center">
-            <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
-            AI Chat Mode - Every message connects directly to AI
-          </div>
+            {/* Invisible input field */}
+            <input
+              ref={inputRef}
+              type="text"
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
+              className="absolute top-0 left-0 w-full h-full opacity-0"
+              autoComplete="off"
+              disabled={isLoading || isStreaming}
+              autoFocus
+            />
+          </form>
+
+          {/* AI Mode Footer (Green Box) */}
+          {showAIModeFooter && (
+            <div className="absolute bottom-4 left-4 right-4 transition-all duration-500">
+              <div className="relative flex justify-between items-center bg-green-900/30 border border-green-700/50 rounded p-2 pr-10 overflow-hidden">
+                <div className="text-green-400 text-sm flex items-center">
+                  <Sparkles className="w-5 h-5 mr-3 mt-1 flex-shrink-0 text-cyan-100 drop-shadow-[0_0_6px_rgba(34,145,218,0.7)]" />
+                  Amicia has a limited ability to remember this conversation for
+                  up to 15 minutes. After that, her memory resets. Reloading the
+                  page will also clear her memory.
+                </div>
+
+                {/* Close Button with Circular Timer */}
+                <div className="absolute top-1/2 right-2 transform -translate-y-1/2">
+                  <button
+                    onClick={() => setShowAIModeFooter(false)}
+                    className="relative w-8 h-8 text-green-400 hover:text-green-300 z-10"
+                    aria-label="Close"
+                  >
+                    ×
+                    {timeoutActive && (
+                      <svg
+                        className="absolute top-0 left-0 w-full h-full"
+                        viewBox="0 0 36 36"
+                      >
+                        <circle
+                          className="text-green-700 animate-countdown"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          fill="transparent"
+                          r="16"
+                          cx="18"
+                          cy="18"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Toggle Reopen Button (<) */}
+          {!showAIModeFooter && (
+            <div className="absolute bottom-4 right-4">
+              <button
+                onClick={() => setShowAIModeFooter(true)}
+                className="p-2 bg-green-900/30 border border-green-700/50 rounded text-green-400 hover:text-green-300 transition-all duration-300"
+              >
+                &lt;
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
